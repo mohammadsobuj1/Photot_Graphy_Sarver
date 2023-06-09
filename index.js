@@ -164,11 +164,30 @@ async function run() {
 
 
         // selacted selactedClassCollactions start 
+
         app.post('/selactedclass', async (req, res) => {
             const selactedClass = req.body;
             const result = await selactedClassCollactions.insertOne(selactedClass)
             res.send(result)
         })
+
+
+        // app.get('/cartclass', async (req, res) => {
+        //     const email = req.query.email;
+        //     console.log(email)
+        //     const query = { email: email };
+        //     const result = await selactedClassCollactions.find(query).toArray();
+        //     res.send(result)
+        // })
+
+        app.get('/selactedclass', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await selactedClassCollactions.find(query).toArray();
+           
+            res.send(result)
+        })
+
 
 
 
@@ -249,7 +268,7 @@ async function run() {
 
 
 
-        app.get('/class',  async (req, res) => {
+        app.get('/class', async (req, res) => {
             const status = req.query.status;
             const query = { status: status };
             const result = await classCollactions.find(query).toArray();
