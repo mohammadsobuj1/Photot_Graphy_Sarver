@@ -53,6 +53,7 @@ async function run() {
 
         const userCollactions = client.db("assainmentDB").collection("users");
         const classCollactions = client.db("assainmentDB").collection("class");
+        const selactedClassCollactions = client.db("assainmentDB").collection("selactedclass");
 
 
 
@@ -162,6 +163,15 @@ async function run() {
 
 
 
+        // selacted selactedClassCollactions start 
+        app.post('/selactedclass', async (req, res) => {
+            const selactedClass = req.body;
+            const result = await selactedClassCollactions.insertOne(selactedClass)
+            res.send(result)
+        })
+
+
+
 
 
 
@@ -239,9 +249,8 @@ async function run() {
 
 
 
-        app.get('/class', verifyJWT, async (req, res) => {
+        app.get('/class',  async (req, res) => {
             const status = req.query.status;
-            console.log(status)
             const query = { status: status };
             const result = await classCollactions.find(query).toArray();
             res.send(result)
