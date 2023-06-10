@@ -4,6 +4,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
+const stripe = require('stripe')(process.env.PAYMENT_KEY);
 const port = process.env.PORT || 5000;
 
 
@@ -54,6 +55,7 @@ async function run() {
         const userCollactions = client.db("assainmentDB").collection("users");
         const classCollactions = client.db("assainmentDB").collection("class");
         const selactedClassCollactions = client.db("assainmentDB").collection("selactedclass");
+        const paymentCollactions = client.db("assainmentDB").collection("payments");
 
 
 
@@ -147,6 +149,68 @@ async function run() {
         })
 
 
+        // cerat paymentMethod 
+
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const { price } = req.body;
+            const amount = parseInt(price * 100);
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+
+            res.send({
+                clientSecret: paymentIntent.client_secret
+            })
+
+
+        })
+        // payment detailes 
+
+        app.post('/payments', verifyJWT, async (req, res) => {
+            const payment = req.body;
+
+            const insertResult = await paymentCollactions.insertOne(payment);
+            res.send(insertResult);
+            // const paymentID = payment.class_id
+
+            // // const query = { _id: paymentID }
+            // // const classid = await classCollactions.findOne(query)
+            // // console.log(classid, 'paice reeeeeeeeeeeeeee')
+        })
+
+
+
+        // after payment delete api 
+
+        app.delete('/selactedclass/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await selactedClassCollactions.deleteOne(query);
+            res.send(result);
+        })
+
+
+
+
+        // my enroll page api 
+
+
+        app.get('/payments', verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            const qurey = { email: email }
+            const result = await paymentCollactions.find(qurey).toArray()
+            res.send(result)
+
+        })
+
+
+
+
+
+
+
 
         app.get('/users/instractor/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
@@ -172,26 +236,36 @@ async function run() {
         })
 
 
-        // app.get('/cartclass', async (req, res) => {
-        //     const email = req.query.email;
-        //     console.log(email)
-        //     const query = { email: email };
-        //     const result = await selactedClassCollactions.find(query).toArray();
-        //     res.send(result)
-        // })
+
 
         app.get('/selactedclass', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
             const result = await selactedClassCollactions.find(query).toArray();
-           
+
             res.send(result)
         })
 
+        app.get('/selactedclass/:id', async (req, res) => {
+            const id = req.params.id;
+            const qurey = { _id: new ObjectId(id) }
+            try {
+                const result = await selactedClassCollactions.findOne(qurey);
+                res.send(result)
+            } catch (error) {
+                res.send(error)
+            }
+        })
+
+        app.delete('/selactedclass/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await selactedClassCollactions.deleteOne(query);
+            res.send(result);
+        })
 
 
-
-
+        // const x= obj.seats-1
 
 
         app.patch('/users/instractor/:id', async (req, res) => {
