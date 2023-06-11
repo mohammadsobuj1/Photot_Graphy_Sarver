@@ -132,6 +132,17 @@ async function run() {
 
 
 
+        app.delete("/deleteuser/:id", async (req, res) => {
+            const id = req.params.id;
+       
+            const query = { _id: new ObjectId(id) };
+            const result = await userCollactions.deleteOne(query);
+            res.send(result);
+
+        })
+
+
+
         app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
 
@@ -224,6 +235,15 @@ async function run() {
 
 
 
+
+        // instractore page api 
+        app.get('/allinstractor', async (req, res) => {
+            const role = req.query.role;
+
+            const filter = { role: role }
+            const result = await userCollactions.find(filter).toArray()
+            res.send(result)
+        })
 
 
 
