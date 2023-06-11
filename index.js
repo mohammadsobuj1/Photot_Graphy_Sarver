@@ -173,11 +173,26 @@ async function run() {
 
             const insertResult = await paymentCollactions.insertOne(payment);
             res.send(insertResult);
-            // const paymentID = payment.class_id
+            const paymentID = payment.class_id;
 
-            // // const query = { _id: paymentID }
-            // // const classid = await classCollactions.findOne(query)
-            // // console.log(classid, 'paice reeeeeeeeeeeeeee')
+            if (paymentID) {
+                const qurey = { _id: new ObjectId(paymentID) }
+                const updateResult = await classCollactions.findOne(qurey)
+
+                classCollactions.updateOne(
+                    { _id: updateResult._id },
+                    {
+                        $inc: {
+                            enrolled_student: 1,
+                            seats: -1
+                        }
+                    }
+                )
+
+            }
+
+
+
         })
 
 
@@ -298,6 +313,57 @@ async function run() {
 
 
 
+
+        app.get('/updateclass/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const result = await classCollactions.findOne(filter)
+
+            res.send(result)
+        })
+
+
+
+        // updat instractor single class 
+
+        app.put("/update/:id", async (req, res) => {
+            const id = req.params.id;
+            const Updateduser = req.body;
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true };
+            const updateToy = {
+                $set: {
+                    classname: Updateduser.classname,
+                    image: Updateduser.image,
+                    price: Updateduser.price,
+                    seats: Updateduser.seats,
+
+                },
+            }
+            try {
+                const result = await classCollactions.updateOne(filter, updateToy, options)
+                res.send(result)
+            } catch (error) {
+                res.send(error)
+            }
+        })
+
+
+
+        // // total enroll class 
+        // app.get('/enrollclass', async (req, res) => {
+        //     const email = req.query.email
+
+        //     const query = { instractorEmail: email }
+        //     const result = await paymentCollactions.find(query).toArray();
+
+        //     res.send(result)
+        // })
+
+
+
+
+
         app.patch('/class/aprove/:id', async (req, res) => {
             const id = req.params.id;
 
@@ -348,12 +414,17 @@ async function run() {
             const result = await classCollactions.find(query).toArray();
             res.send(result)
         })
-
-
-
-
-        app.get('/class', verifyJWT, async (req, res) => {
+        app.get('/class', async (req, res) => {
             const email = req.query.email;
+            const query = { email: email };
+            const result = await paymentCollactions.find(query).toArray();
+            res.send(result)
+        })
+
+
+
+        app.get('/class/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
 
             const decodedEmail = req.decoded.email;
 
@@ -363,7 +434,9 @@ async function run() {
 
             const query = { email: email };
             const result = await classCollactions.find(query).toArray();
+
             res.send(result)
+
         })
 
         // Send a ping to confirm a successful connection
