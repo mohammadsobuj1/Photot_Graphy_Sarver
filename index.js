@@ -50,7 +50,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         const userCollactions = client.db("assainmentDB").collection("users");
         const classCollactions = client.db("assainmentDB").collection("class");
@@ -84,15 +84,15 @@ async function run() {
 
         // veryfy instractor 
 
-        const verifyInstractor = async (req, res, next) => {
-            const email = req.decoded.email;
-            const query = { email: email }
-            const user = await userCollactions.findOne(query);
-            if (user?.role !== 'instractor') {
-                return res.status(403).send({ error: true, message: 'forbidden message' });
-            }
-            next();
-        }
+        // const verifyInstractor = async (req, res, next) => {
+        //     const email = req.decoded.email;
+        //     const query = { email: email }
+        //     const user = await userCollactions.findOne(query);
+        //     if (user?.role !== 'instractor') {
+        //         return res.status(403).send({ error: true, message: 'forbidden message' });
+        //     }
+        //     next();
+        // }
 
 
 
@@ -132,9 +132,53 @@ async function run() {
 
 
 
+
+        app.get('/feedback/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            // const qurey = { _id: new ObjectId(id) }
+            // try {
+            //     const result = await classCollactions.findOne(qurey);
+            //     res.send(result)
+            // } catch (error) {
+            //     res.send(error)
+            // }
+        })
+
+
+
+
+        // feedback api 
+        app.patch('/feedback', async (req, res) => {
+
+            const data = req.body;
+
+            console.log('dataaaaaaaaaaaaa', data)
+
+            const filter = { _id: new ObjectId(data.id) };
+            const updateDoc = {
+                $set: {
+                    feedback: data.feedback,
+                },
+            };
+
+            const result = await classCollactions.updateOne(filter, updateDoc);
+            res.send(result);
+            console.log(result)
+
+        })
+
+
+
+
+
+
+
+
+
         app.delete("/deleteuser/:id", async (req, res) => {
             const id = req.params.id;
-       
+
             const query = { _id: new ObjectId(id) };
             const result = await userCollactions.deleteOne(query);
             res.send(result);
@@ -236,7 +280,7 @@ async function run() {
 
 
 
-        // instractore page api 
+        // pe page api 
         app.get('/allinstractor', async (req, res) => {
             const role = req.query.role;
 
@@ -330,6 +374,22 @@ async function run() {
             const result = await classCollactions.insertOne(user)
             res.send(result)
         })
+
+        // sort aby enroll ment field 
+
+        app.get('/enrollsort', async (req, res) => {
+            try {
+                const result = await classCollactions.find().sort({ "enrolled_student": -1 }).toArray();
+                res.send(result)
+            } catch (error) {
+                res.send(error)
+            }
+
+
+
+        })
+
+
 
 
 
@@ -460,7 +520,7 @@ async function run() {
         })
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
