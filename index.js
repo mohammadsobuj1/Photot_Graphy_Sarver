@@ -153,7 +153,7 @@ async function run() {
 
             const data = req.body;
 
-            console.log('dataaaaaaaaaaaaa', data)
+          
 
             const filter = { _id: new ObjectId(data.id) };
             const updateDoc = {
