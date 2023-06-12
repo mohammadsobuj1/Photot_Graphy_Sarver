@@ -135,7 +135,7 @@ async function run() {
 
         app.get('/feedback/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(id)
+         
             // const qurey = { _id: new ObjectId(id) }
             // try {
             //     const result = await classCollactions.findOne(qurey);
